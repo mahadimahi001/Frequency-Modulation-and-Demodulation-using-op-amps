@@ -1,0 +1,49 @@
+FM MODULATOR - 9V BATTERY - 1N4007 DIODES AS VARACTORS
+* Nodes: 1=+9V 2=base 3,9=tank ends 5=collector 7=bias 8=varactors 21=FM OUT
+* Supply
+V2 1 0 DC 9
+* Message = function generator (50 ohm output), 5 V peak, 2 kHz (use 1K for 1 kHz)
+VG 12 0 SIN(0 5 2K)
+RG 12 6 50
+C6 6 7 1U
+* Varactor bias divider: 9 V x 20k/30k = 6 V
+R8 1 7 10K
+R9 7 0 20K
+R5 7 8 1K
+* Oscillator
+Q1 5 2 4 Q2N3904
+R1 1 2 27K
+R2 2 0 10K
+R3 1 5 2.2K
+R4 4 10 100
+R7 10 0 2.2K
+C1 10 0 10U
+C2 5 3 100N
+C3 2 9 2.2N
+L1 3 9 10M
+C4 3 0 47P
+C5 9 0 47P
+R6 3 0 1MEG
+* Varactor group A: four 1N4007 in parallel, anodes to node 3, cathodes to node 8
+D1 3 8 D1N4007
+D2 3 8 D1N4007
+D3 3 8 D1N4007
+D4 3 8 D1N4007
+* Varactor group B: four 1N4007 in parallel, anodes to node 9, cathodes to node 8
+D5 9 8 D1N4007
+D6 9 8 D1N4007
+D7 9 8 D1N4007
+D8 9 8 D1N4007
+* Output
+C7 3 21 100P
+R10 21 0 47K
+* Models (1N4007 matched to datasheet typical 15 pF at 4 V reverse)
+.MODEL Q2N3904 NPN(IS=6.734F XTI=3 EG=1.11 VAF=74.03 BF=416.4 NE=1.259
++ ISE=6.734F IKF=66.78M XTB=1.5 BR=.7371 NC=2 ISC=0 IKR=0 RC=1
++ CJC=3.638P MJC=.3085 VJC=.75 FC=.5 CJE=4.493P MJE=.2593 VJE=.75
++ TR=239.5N TF=301.2P ITF=.4 VTF=4 XTF=2 RB=10)
+.MODEL D1N4007 D(IS=7N N=1.8 RS=0.04 CJO=32P VJ=0.7 M=0.4 FC=0.5
++ TT=1U BV=1000 IBV=5U)
+.TRAN 10N 2M 0 10N
+.PROBE
+.END

@@ -1,0 +1,72 @@
+FM TRANSMITTER (VOLTAGE-CONTROLLED ASTABLE) + SLOPE-DETECTOR RECEIVER - 12 V
+* Carrier about 31-73 kHz with a 3 V peak message: FM visible at first look
+* Nodes: 1=+12V  7=control voltage  21=FM OUT (Q2 collector)  37=detector  43=AUDIO OUT
+*
+* ===================== TRANSMITTER =====================
+V2  1 0 DC 12
+* Message = function generator (50 ohm), 3 V peak (6 Vpp), 2 kHz
+VG  12 0 SIN(0 3 2K)
+RG  12 6 50
+C6  6 7 10U
+* Control-voltage bias (about 6 V)
+R8  1 7 2.2K
+R9  7 0 2.2K
+* Voltage-controlled astable multivibrator
+RB1 7 51 15K
+RB2 7 52 15K
+Q1  53 51 54 Q2N3904
+D1  54 0 D1N4148
+Q2  21 52 56 Q2N3904
+D2  56 0 D1N4148
+RC1 1 53 2.2K
+RC2 1 21 2.2K
+CA  53 52 470P
+CB  21 51 510P
+* FM OUT is taken directly from Q2's collector (node 21): clean 0-12 V square
+*
+* ===================== RECEIVER =====================
+* Input amplifier driving the off-tuned tank
+C20 21 29 10N
+R19 29 30 10K
+R20 1 30 47K
+R21 30 0 10K
+Q3  31 30 32 Q2N3904
+R22 32 33 470
+R23 33 0 100
+C21 33 0 1U
+* Tank tuned below the carrier band (about 28 kHz)
+L20 1 31 10M
+C22 1 31 3.3N
+R24 1 31 1K
+* Envelope detector
+R25 31 34 2.2K
+D20 34 36 D1N4148
+R26 36 1 47K
+C24 36 0 1N
+R27 36 37 1K
+C25 37 0 10N
+* Audio amplifier (output in phase with the message)
+C26 37 40 15N
+R28 1 40 100K
+R29 40 0 9.1K
+Q4  41 40 42 Q2N3904
+R30 42 0 150
+R31 1 41 3.3K
+C27 41 0 2.2N
+C28 41 43 1U
+R32 43 0 100K
+*
+* ===================== MODELS =====================
+.MODEL Q2N3904 NPN(IS=6.734F XTI=3 EG=1.11 VAF=74.03 BF=416.4 NE=1.259
++ ISE=6.734F IKF=66.78M XTB=1.5 BR=.7371 NC=2 ISC=0 IKR=0 RC=1
++ CJC=3.638P MJC=.3085 VJC=.75 FC=.5 CJE=4.493P MJE=.2593 VJE=.75
++ TR=239.5N TF=301.2P ITF=.4 VTF=4 XTF=2 RB=10)
+.MODEL D1N4148 D(IS=2.52N RS=0.568 N=1.752 CJO=4P M=0.4 TT=20N
++ BV=100 IBV=100U)
+*
+* Start the astable asymmetrically
+.IC V(51)=0
+.OPTIONS ITL5=0
+.TRAN 10N 3M 1M 10N
+.PROBE
+.END

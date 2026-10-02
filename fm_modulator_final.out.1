@@ -1,0 +1,168 @@
+
+**** 09/24/26 04:22:30 ********* PSpice 9.2 (Mar 2000) ******** ID# 0 ********
+
+ * Varactor-tuned Colpitts FM modulator - FINAL (clean, centred output)
+
+
+ ****     CIRCUIT DESCRIPTION
+
+
+******************************************************************************
+
+
+
+* Nodes: 1=Vcc 2=base 3,9=tank ends 4=emitter 5=collector 6=message 8=varactor bias
+*        20 = tank output centred on 0 V      21 = FINAL FM OUTPUT (flat envelope)
+*
+* ---------- Supplies & message ----------
+V2  1 0 DC 12
+V3  6 0 SIN(0 8 15k)           ; message: 8 V peak, 15 kHz
+V1  7 6 DC 9                   ; varactor bias stacked on the message
+I1  3 9 PULSE(0 1m 0 10n 10n 1u 1)   ; one-time kick to start the oscillator
+*
+* ---------- Oscillator transistor ----------
+Q1  5 2 4 Q2N3394
+R1  1 2 28k
+R2  2 0 10k
+R3  1 5 2.2k
+R4  4 10 100
+R7  10 0 2.2k
+C1  10 0 10u
+*
+* ---------- Tank ----------
+C2  5 3 100n
+C3  2 9 2.2n
+L1  3 9 2.2m
+C4  3 0 220p
+C5  9 0 220p
+R6  3 0 1meg
+*
+* ---------- Back-to-back varactors ----------
+D1  3 8 DBB112
+D2  9 8 DBB112
+R5  7 8 3.3k
+*
+* ---------- Output stage ----------
+* Stage 1: voltage ACROSS the tank -> removes the negative DC shift
+E1  20 0 3 9 1
+RL1 20 0 10k
+* Stage 2: soft limiter -> removes the uneven top/bottom (flat envelope)
+E2  21 0 VALUE={5*TANH(V(20)/2)}
+RL2 21 0 10k
+*
+* ---------- Models ----------
+.MODEL Q2N3394 NPN(Is=61.01f Xti=3 Eg=1.11 Vaf=57.37 Bf=121.3 Ne=1.305
++ Ise=122.2f Ikf=97.79m Xtb=1.5 Br=.2359 Nc=2 Isc=0 Ikr=0 Rc=2.14
++ Cjc=6.072p Mjc=.3333 Vjc=.75 Fc=.5 Cje=5.928p Mje=.3333 Vje=.75
++ Tr=1.633u Tf=316.3p Itf=.2 Vtf=5 Xtf=8 Rb=10)
+.MODEL DBB112 D(IS=1e-14 RS=0.0011 CJO=2.324e-9 VJ=0.75 TT=5e-9 M=0.9
++ BV=100 N=1 EG=1.11 XTI=3 FC=0.5 IBV=0.0001)
+*
+.OPTIONS ITL5=0
+.TRAN 10n 1m 0 10n
+.PROBE V(21) V(6) V(20) V(3)
+.END
+
+**** 09/24/26 04:22:30 ********* PSpice 9.2 (Mar 2000) ******** ID# 0 ********
+
+ * Varactor-tuned Colpitts FM modulator - FINAL (clean, centred output)
+
+
+ ****     Diode MODEL PARAMETERS
+
+
+******************************************************************************
+
+
+
+
+               DBB112          
+          IS   10.000000E-15 
+          BV  100            
+         IBV  100.000000E-06 
+          RS    1.100000E-03 
+          TT    5.000000E-09 
+         CJO    2.324000E-09 
+          VJ     .75         
+           M     .9          
+
+
+**** 09/24/26 04:22:30 ********* PSpice 9.2 (Mar 2000) ******** ID# 0 ********
+
+ * Varactor-tuned Colpitts FM modulator - FINAL (clean, centred output)
+
+
+ ****     BJT MODEL PARAMETERS
+
+
+******************************************************************************
+
+
+
+
+               Q2N3394         
+               NPN             
+          IS   61.010000E-15 
+          BF  121.3          
+          NF    1            
+         VAF   57.37         
+         IKF     .09779      
+         ISE  122.200000E-15 
+          NE    1.305        
+          BR     .2359       
+          NR    1            
+          RB   10            
+          RC    2.14         
+         CJE    5.928000E-12 
+         MJE     .3333       
+         CJC    6.072000E-12 
+         MJC     .3333       
+          TF  316.300000E-12 
+         XTF    8            
+         VTF    5            
+         ITF     .2          
+          TR    1.633000E-06 
+         XTB    1.5          
+          CN    2.42         
+           D     .87         
+
+
+**** 09/24/26 04:22:30 ********* PSpice 9.2 (Mar 2000) ******** ID# 0 ********
+
+ * Varactor-tuned Colpitts FM modulator - FINAL (clean, centred output)
+
+
+ ****     INITIAL TRANSIENT SOLUTION       TEMPERATURE =   27.000 DEG C
+
+
+******************************************************************************
+
+
+
+ NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE
+
+
+(    1)   12.0000  (    2)    3.0427  (    3) 18.02E-06  (    4)    2.4357      
+
+(    5)    9.7046  (    6)    0.0000  (    7)    9.0000  (    8)    9.0000      
+
+(    9) 18.02E-06  (   10)    2.3298  (   20)    0.0000  (   21)    0.0000  
+
+
+
+
+    VOLTAGE SOURCE CURRENTS
+    NAME         CURRENT
+
+    V2          -1.363E-03
+    V3          -1.802E-11
+    V1          -1.802E-11
+
+    TOTAL POWER DISSIPATION   1.64E-02  WATTS
+
+
+
+          JOB CONCLUDED
+
+          TOTAL JOB TIME            4.59
+

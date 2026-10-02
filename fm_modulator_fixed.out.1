@@ -1,0 +1,47 @@
+
+**** 09/24/26 03:12:07 ********* PSpice 9.2 (Mar 2000) ******** ID# 0 ********
+
+ * Varactor-tuned Colpitts FM modulator - fixed version
+
+
+ ****     CIRCUIT DESCRIPTION
+
+
+******************************************************************************
+
+
+
+* Nodes: 1=Vcc, 2=base, 3/9=tank ends, 4=emitter, 5=collector, 8=varactor bias
+*
+* --- Supplies & message ---
+V2  1 0 DC 12
+V3  6 0 SIN(0 4 1k)            ; message: 4 V PEAK (2.83 V rms); use 10k for scope viewing
+V1  7 6 DC 6                   ; varactor bias, stacked on the message
+*
+* --- Transistor & bias ---
+Q1  5 2 4 2N3394               ; 2N3904 also works
+-------------------------------$
+ERROR -- Missing model
+R1  1 2 28k
+R2  2 0 10k
+R3  1 5 2.2k                   ; was 1k  -> Ic ~1 mA, less overdrive
+R4  4 10 100                   ; unbypassed part of emitter resistor
+R7  10 0 2.2k                  ; NEW: bypassed part
+C1  10 0 10u                   ; bypass across R7 only
+*
+* --- Tank ---
+C2  5 3 100n
+C3  2 9 2.2n                   ; was 100n -> keeps audio out of the base
+L1  3 9 1m
+C4  3 0 330p                   ; was 1n
+C5  9 0 330p                   ; was 3.3n  (C4 = C5 is important)
+R6  3 0 1meg
+*
+* --- Back-to-back varactors (C6 removed) ---
+D1  3 8 BB112                  ; anode node 3, cathode node 8
+D2  9 8 BB112                  ; NEW: anode node 9, cathode node 8
+R5  7 8 10k
+*
+.tran 20n 3m 0 20n
+.end
+

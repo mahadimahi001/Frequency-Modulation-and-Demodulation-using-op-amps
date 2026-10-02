@@ -1,0 +1,48 @@
+* ---------- Supplies & message ----------
+V2  1 0 DC 12
+V3  6 0 SIN(0 11 15k)          ; message: 11 V peak (was 8), 15 kHz
+V1  7 6 DC 12                  ; varactor bias (was 9): varactors swing 1 V to 23 V
+I1  3 9 PULSE(0 1m 0 10n 10n 1u 1)   ; one-time kick to start the oscillator
+*
+* ---------- Oscillator transistor ----------
+Q1  5 2 4 Q2N3394
+R1  1 2 28k
+R2  2 0 10k
+R3  1 5 2.2k
+R4  4 10 100
+R7  10 0 2.2k
+C1  10 0 10u
+*
+* ---------- Tank ----------
+C2  5 3 100n
+C3  2 9 2.2n
+L1  3 9 2.2m
+C4  3 0 100p                   ; was 220p
+C5  9 0 100p                   ; was 220p
+R6  3 0 1meg
+*
+* ---------- Back-to-back varactors ----------
+D1  3 8 DBB112
+D2  9 8 DBB112
+R5  7 8 1k                     ; was 3.3k
+*
+* ---------- Output stage ----------
+* Stage 1: voltage ACROSS the tank -> removes the negative DC shift
+E1  20 0 3 9 1
+RL1 20 0 10k
+* Stage 2: soft limiter -> removes the uneven top/bottom (flat envelope)
+E2  21 0 VALUE={5*TANH(V(20)/2)}
+RL2 21 0 10k
+*
+* ---------- Models ----------
+.MODEL Q2N3394 NPN(Is=61.01f Xti=3 Eg=1.11 Vaf=57.37 Bf=121.3 Ne=1.305
++ Ise=122.2f Ikf=97.79m Xtb=1.5 Br=.2359 Nc=2 Isc=0 Ikr=0 Rc=2.14
++ Cjc=6.072p Mjc=.3333 Vjc=.75 Fc=.5 Cje=5.928p Mje=.3333 Vje=.75
++ Tr=1.633u Tf=316.3p Itf=.2 Vtf=5 Xtf=8 Rb=10)
+.MODEL DBB112 D(IS=1e-14 RS=0.0011 CJO=2.324e-9 VJ=0.75 TT=5e-9 M=0.9
++ BV=100 N=1 EG=1.11 XTI=3 FC=0.5 IBV=0.0001)
+*
+.OPTIONS ITL5=0
+.TRAN 10n 1m 0 10n
+.PROBE V(21) V(6) V(20) V(3)
+.END

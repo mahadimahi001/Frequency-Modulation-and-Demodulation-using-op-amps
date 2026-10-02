@@ -1,0 +1,43 @@
+* Varactor-tuned Colpitts FM modulator - fixed version
+* Nodes: 1=Vcc, 2=base, 3/9=tank ends, 4=emitter, 5=collector, 8=varactor bias
+*
+* --- Supplies & message ---
+V2  1 0 DC 12                  ; 12 V supply (steady, so the bias point is correct)
+I1  3 9 PULSE(0 1m 0 10n 10n 1u 1)  ; one 1 mA, 1 us pulse into the tank to start oscillation
+V3  6 0 SIN(0 4 1k)            ; message: 4 V PEAK (2.83 V rms); use 10k for scope viewing
+V1  7 6 DC 6                   ; varactor bias, stacked on the message
+*
+* --- Transistor & bias ---
+Q1  5 2 4 Q2N3394
+R1  1 2 28k
+R2  2 0 10k
+R3  1 5 2.2k
+R4  4 10 100                   ; unbypassed part of emitter resistor
+R7  10 0 2.2k                  ; bypassed part
+C1  10 0 10u
+*
+* --- Tank ---
+C2  5 3 100n
+C3  2 9 2.2n
+L1  3 9 1m
+C4  3 0 330p
+C5  9 0 330p
+R6  3 0 1meg
+*
+* --- Back-to-back varactors ---
+D1  3 8 DBB112                 ; anode node 3, cathode node 8
+D2  9 8 DBB112                 ; anode node 9, cathode node 8
+R5  7 8 10k
+*
+* --- Device models (from your Multisim export) ---
+.MODEL Q2N3394 NPN(Is=61.01f Xti=3 Eg=1.11 Vaf=57.37 Bf=121.3 Ne=1.305
++ Ise=122.2f Ikf=97.79m Xtb=1.5 Br=.2359 Nc=2 Isc=0 Ikr=0 Rc=2.14
++ Cjc=6.072p Mjc=.3333 Vjc=.75 Fc=.5 Cje=5.928p Mje=.3333 Vje=.75
++ Tr=1.633u Tf=316.3p Itf=.2 Vtf=5 Xtf=8 Rb=10)
+.MODEL DBB112 D(IS=1e-14 RS=0.0011 CJO=2.324e-9 VJ=0.75 TT=5e-9 M=0.9
++ BV=100 N=1 EG=1.11 XTI=3 FC=0.5 IBV=0.0001)
+*
+.OPTIONS ITL5=0
+.TRAN 20n 3m 0 20n
+.PROBE V(3) V(6) V(8) V(5)
+.END

@@ -1,0 +1,126 @@
+FM TRANSMITTER + DIFFERENTIATOR SLOPE DETECTOR - LM318, +/-9 V SUPPLY (two 9 V batteries)
+* Key nodes: 3=MESSAGE  9=TRIANGLE  12=SQUARE  16=FM OUT (sine)  19=DIFFERENTIATOR
+*            24=FULL-WAVE RECTIFIED  33=LOW-PASS  29=AUDIO OUT
+*
+* ---------------- Supplies ----------------
+VCC 1 0 DC 9
+VEE 2 0 DC -9
+*
+* ---------------- Message (function generator) ----------------
+VM  3 0 SIN(0 2.5 2K)          ; message 2 kHz (use 1K for 1 kHz)
+*
+* ================= TRANSMITTER =================
+* A1: inverting summer -> node 5 = -(5 V + message)
+R1  1 4 22K
+R2  3 4 15K                    ; message scaled to fit the smaller +/-7 V output swing
+R3  4 5 10K
+X1  0 4 1 2 5 LM318
+* A2: inverter -> node 7 = +(5 V + message)  (control voltage)
+R4  5 6 10K
+R5  6 7 10K
+X2  0 6 1 2 7 LM318
+* A3: integrator with diode-steered input current (triangle at node 9)
+C1  8 9 560P              ; 470p + 100p in parallel = 570 pF
+X3  0 8 1 2 9 LM318
+D1  8 10 D1N4148
+R6  10 5 22K                  ; 10k + 10k in series = 20k
+R7  7 11 10K
+D2  11 8 D1N4148
+D3  11 12 D1N4148
+* A4: Schmitt trigger (square at node 12)
+R8  9 13 10K
+R9  12 13 39K                  ; triangle about +/-1.8 V
+X4  13 0 1 2 12 LM318
+* Triangle-to-sine shaper
+R10 9 14 4.7K
+R11 14 0 3.3K                  ; sine shaper re-matched to the smaller triangle
+D4  14 0 D1N4148
+D5  0 14 D1N4148
+* A5: non-inverting amplifier -> FM OUT (node 16)
+X5  14 15 1 2 16 LM318
+R12 15 0 10K
+R13 16 15 82K
+*
+* ================= RECEIVER =================
+* A6: differentiator = slope detector (output amplitude proportional to frequency)
+R14 16 17 1K
+C2  17 18 220P
+R15 18 19 12K
+C3  18 19 22P
+X6  0 18 1 2 19 LM318
+* A7 + A8: precision full-wave rectifier (node 24 = -|v|)
+R16 19 20 10K
+X7  0 20 1 2 21 LM318
+D6  20 21 D1N4148
+D7  21 22 D1N4148
+R17 22 20 10K
+R18 19 23 10K
+R19 22 23 10K
+R19B 22 23 10K                 ; two 10k in parallel = 5k
+R20 23 24 10K
+X8  0 23 1 2 24 LM318
+* A9 + A11: 4-pole Butterworth low-pass (about 8 kHz) - removes carrier ripple
+R21 24 25 10K
+R22 25 26 10K
+C4  25 27 2N
+C5  26 0 1.5N
+X9  26 27 1 2 27 LM318
+R27 27 31 15K
+R28 31 32 15K
+C7  31 33 3.3N
+C8  32 0 470P
+X11 32 33 1 2 33 LM318
+* A10: phase-lead network (R29, C9) cancels the filter delay; R24+R25 remove the DC level
+R23 33 28 15K
+R29 33 34 1.8K
+C9  34 28 4.3N
+R24 1 28 56K                   ; sets the output DC level (use a 100k trimmer in hardware)
+R26 28 29 27K
+X10 0 28 1 2 29 LM318
+*
+* ================= MODELS =================
+.MODEL D1N4148 D(IS=2.52N RS=0.568 N=1.752 CJO=4P M=0.4 TT=20N
++ BV=100 IBV=100U)
+*
+* LM318 macromodel (Boyle-type, built from LM318 datasheet typical values:
+*   15 MHz gain-bandwidth, 70 V/us slew rate, open-loop gain 2E5, 150 nA bias current)
+* pins: non-inv input, inv input, V+, V-, output
+.SUBCKT LM318 1 2 3 4 5
+C1   11 12 1.0E-12
+C2    6  7 3.0E-12
+DC    5 53 DX
+DE   54  5 DX
+DLP  90 91 DX
+DLN  92 90 DX
+DP    4  3 DX
+EGND 99  0 POLY(2) (3,0) (4,0) 0 .5 .5
+FB    7 99 POLY(5) VB VC VE VLP VLN 0 7.07E6 -1E7 1E7 1E7 -1E7
+GA    6  0 11 12 2.83E-4
+GCM   0  6 10 99 2.83E-9
+IEE  10  4 DC 210E-6
+HLIM 90  0 VLIM 1K
+Q1   11  2 13 QX
+Q2   12  1 14 QX
+R2    6  9 100.0E3
+RC1   3 11 3.534E3
+RC2   3 12 3.534E3
+RE1  13 10 3.29E3
+RE2  14 10 3.29E3
+REE  10 99 13.19E6
+RO1   8  5 50
+RO2   7 99 100
+RP    3  4 4.8E3
+VB    9  0 DC 0
+VC    3 53 DC 1.4
+VE   54  4 DC 1.4
+VLIM  7  8 DC 0
+VLP  91  0 DC 40
+VLN   0 92 DC 40
+.MODEL DX D(IS=800.0E-18 RS=1)
+.MODEL QX NPN(IS=800.0E-18 BF=700)
+.ENDS
+*
+.OPTIONS ITL5=0
+.TRAN 20N 2.5M 0 20N
+.PROBE
+.END
